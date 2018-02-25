@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 
 const router = express.Router();
@@ -34,6 +35,38 @@ router.post('/signup', async (req, res, next) => {
                 console.log('error: ', error);
                 res.status(500).json({ error });
             }
+        });
+    } catch (error) {
+        console.log('error: ', error);
+        res.status(500).json({ error });
+    }
+});
+
+router.post('/login', async (req, res, next) => {
+    try {
+        let user = await User.find({ email: req.body.email }).exec();
+
+        if (!user.length) {
+            res.status(401).json({ message: 'Auth failed' });
+        }
+
+        bcrypt.compare(req.body.password, user[0].password, (err, response) => {
+            if (err) {
+                res.status(401).json({ message: 'Auth failed' });
+            }
+
+            if (response) {
+                const token = jwt.sign(
+                    { email: user[0].email, userId: user[0]._id },
+                    process.env.JWT_KEY,
+                    {
+                        expiresIn: '1h'
+                    }
+                );
+                res.status(200).json({ message: 'Auth successful.', token });
+            }
+
+            res.status(401).json({ message: 'Auth failed' });
         });
     } catch (error) {
         console.log('error: ', error);
