@@ -9,6 +9,7 @@ const Product = require('../models/product');
 router.get('/', async (req, res, next) => {
     try {
         let docs = await Order.find()
+            .populate('product')
             .select('product quantity _id')
             .exec();
 
@@ -76,7 +77,9 @@ router.post('/', async (req, res, next) => {
 
 router.get('/:orderId', async (req, res, next) => {
     try {
-        let doc = await Order.findById(req.params.orderId).exec();
+        let doc = await Order.findById(req.params.orderId)
+            .populate('product')
+            .exec();
 
         if (!doc) {
             res.status(404).json({
