@@ -1,0 +1,21 @@
+{
+  "name": "rest-shop",
+  "version": "1.0.0",
+  "description": "A Node.js restful api",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "node",
+    "restful"
+  ],
+  "author": "Gabriel Joshua Paet",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "express": "^4.16.2",
+    "mongoose": "^5.0.7",
+    "morgan": "^1.9.0"
+  }
+}
