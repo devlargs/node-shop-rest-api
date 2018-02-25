@@ -6,7 +6,9 @@ const router = express.Router();
 const Order = require('../models/order');
 const Product = require('../models/product');
 
-router.get('/', async (req, res, next) => {
+const checkAuth = require('../middleware/check-auth');
+
+router.get('/', checkAuth, async (req, res, next) => {
     try {
         let docs = await Order.find()
             .populate('product')
@@ -33,7 +35,7 @@ router.get('/', async (req, res, next) => {
     }
 });
 
-router.post('/', async (req, res, next) => {
+router.post('/', checkAuth, async (req, res, next) => {
     try {
         let product = Product.findById(req.body.productId);
 
@@ -75,7 +77,7 @@ router.post('/', async (req, res, next) => {
     }
 });
 
-router.get('/:orderId', async (req, res, next) => {
+router.get('/:orderId', checkAuth, async (req, res, next) => {
     try {
         let doc = await Order.findById(req.params.orderId)
             .populate('product')
@@ -100,7 +102,7 @@ router.get('/:orderId', async (req, res, next) => {
     }
 });
 
-router.delete('/:orderId', async (req, res, next) => {
+router.delete('/:orderId', checkAuth, async (req, res, next) => {
     try {
         let result = await Order.remove({ _id: req.params.orderId });
 
