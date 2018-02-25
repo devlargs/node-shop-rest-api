@@ -11,6 +11,7 @@ const productRoutes = require('./routes/products');
 mongoose.connect('mongodb://127.0.0.1/node-shop');
 
 app.use(morgan('dev'));
+app.use('/uploads' ,express.static('uploads'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 

@@ -1,13 +1,38 @@
+const multer = require('multer');
 const express = require('express');
 const mongoose = require('mongoose');
 
+const storage = multer.diskStorage({
+    destination: (req, file, callback) => {
+        callback(null, './uploads');
+    },
+    filename: (req, file, callback) => {
+        callback(null, `${new Date().toISOString()}${file.originalname}`);
+    }
+});
+
+const fileFilter = (req, file, callback) => {
+    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+        callback(null, true);
+    }
+
+    callback(null, false);
+};
+
 const router = express.Router();
+const upload = multer({ 
+    storage, 
+    fileFilter,
+    limits: { fileSize: 1024 * 1024 * 5 } 
+});
 
 const Product = require('../models/product');
 
 router.get('/', async (req, res, next) => {
     try {
-        let docs = await Product.find().select('name price _id').exec();
+        let docs = await Product.find()
+            .select('name price _id productImage')
+            .exec();
 
         const response = {
             count: docs.length,
@@ -16,13 +41,14 @@ router.get('/', async (req, res, next) => {
                     name: doc.name,
                     price: doc.price,
                     Id: doc._id,
+                    productImage: doc.productImage,
                     request: {
                         type: 'GET',
                         url: `http://localhost:3000/products/${doc._id}`
                     }
-                }
+                };
             })
-        }
+        };
 
         res.status(200).json(response);
     } catch (error) {
@@ -31,11 +57,13 @@ router.get('/', async (req, res, next) => {
     }
 });
 
-router.post('/', async (req, res, next) => {
+router.post('/', upload.single('productImage'), async (req, res, next) => {
+    console.log(req.file);
     const product = new Product({
         _id: new mongoose.Types.ObjectId(),
         name: req.body.name,
-        price: req.body.price
+        price: req.body.price,
+        productImage: req.file.path
     });
 
     try {
@@ -63,10 +91,14 @@ router.get('/:productId', async (req, res, next) => {
     const id = req.params.productId;
 
     try {
-        let doc = await Product.findById(id).select().exec();
+        let doc = await Product.findById(id)
+            .select('name price _id productImage')
+            .exec();
 
         if (!doc) {
-            res.status(404).json({ message: 'No valid entry found for provided ID' });
+            res
+                .status(404)
+                .json({ message: 'No valid entry found for provided ID' });
         }
 
         res.status(200).json({
